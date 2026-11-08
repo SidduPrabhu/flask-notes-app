@@ -5,41 +5,116 @@ pipeline {
         label 'Agent1'
     }
 
+    parameters {
+
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['dev', 'qa', 'prod'],
+            description: 'Select deployment environment'
+        )
+
+        string(
+            name: 'IMAGE_TAG',
+            defaultValue: 'v1.0',
+            description: 'Enter Docker image tag'
+        )
+
+        booleanParam(
+            name: 'RUN_TESTS',
+            defaultValue: true,
+            description: 'Run automated tests'
+        )
+
+    }
+
+    environment {
+
+        APP_NAME = 'notes-api'
+
+        DOCKER_NAMESPACE = 'your-dockerhub-username'
+
+    }
+
     stages {
 
-        stage('Hello Jenkins') {
+        stage('Display Configuration') {
 
             steps {
-                sh 'echo "Welcome to Notes CI Pipeline"'
+
+                echo "Environment: ${params.ENVIRONMENT}"
+
+                echo "Image Tag: ${params.IMAGE_TAG}"
+
+                echo "Run Tests: ${params.RUN_TESTS}"
+
+                echo "Application: ${env.APP_NAME}"
+
+                echo "Docker Namespace: ${env.DOCKER_NAMESPACE}"
+
             }
 
         }
 
-        stage('Workspace Information') {
+        stage('Validate Parameters') {
 
             steps {
-                sh 'pwd'
-                sh 'whoami'
-                sh 'hostname'
-                sh 'ls -la'
+
+                script {
+
+                    if (params.IMAGE_TAG == '') {
+
+                        error('Docker image tag cannot be empty')
+
+                    }
+
+                    if (
+                        params.ENVIRONMENT == 'prod' &&
+                        params.RUN_TESTS == false
+                    ) {
+
+                        error('Production deployment requires tests')
+
+                    }
+
+                }
+
             }
 
         }
 
-        stage('Git Checkout') {
+        stage('Application Information') {
 
             steps {
-                checkout scm
+
+                script {
+
+                    def imageName =
+                        "${env.DOCKER_NAMESPACE}/${env.APP_NAME}:${params.IMAGE_TAG}"
+
+                    echo "Docker Image: ${imageName}"
+
+                }
+
             }
 
         }
 
-        stage('Verify Checkout') {
+        stage('Test Execution') {
+
+            when {
+
+                expression {
+                    params.RUN_TESTS == true
+                }
+
+            }
 
             steps {
-                sh 'echo "Checking downloaded source code"'
-                sh 'ls -la'
-                sh 'git log -1 --oneline'
+
+                echo 'Executing automated tests...'
+
+                sh 'python3 --version'
+
             }
 
         }
@@ -49,11 +124,15 @@ pipeline {
     post {
 
         success {
-            echo 'Lab 2 completed successfully'
+
+            echo 'Pipeline completed successfully'
+
         }
 
         failure {
-            echo 'Lab 2 failed. Check console output'
+
+            echo 'Pipeline failed. Check the console output.'
+
         }
 
     }
