@@ -1,25 +1,61 @@
+
 pipeline {
+
     agent {
         label 'Agent1'
     }
+
     stages {
-        stage('Hello Jenkins'){
+
+        stage('Hello Jenkins') {
+
             steps {
-                sh 'echo "Hello from jenkins agent"'
+                sh 'echo "Welcome to Notes CI Pipeline"'
             }
+
         }
-        stage('Workspace Inforamtion'){
+
+        stage('Workspace Information') {
+
             steps {
-                sh ''' 
-                 pwd
-                 whoami
-                 hostname
-                 ls -la
-                 df -h
-                 printenv
-                '''
+                sh 'pwd'
+                sh 'whoami'
+                sh 'hostname'
+                sh 'ls -la'
             }
+
         }
-        
+
+        stage('Git Checkout') {
+
+            steps {
+                checkout scm
+            }
+
+        }
+
+        stage('Verify Checkout') {
+
+            steps {
+                sh 'echo "Checking downloaded source code"'
+                sh 'ls -la'
+                sh 'git log -1 --oneline'
+            }
+
+        }
+
     }
+
+    post {
+
+        success {
+            echo 'Lab 2 completed successfully'
+        }
+
+        failure {
+            echo 'Lab 2 failed. Check console output'
+        }
+
+    }
+
 }
