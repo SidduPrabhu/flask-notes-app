@@ -15,6 +15,7 @@ pipeline {
                  whoami
                  hostname
                  ls -la
+                 df -h
                 '''
             }
         }
