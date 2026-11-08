@@ -16,6 +16,7 @@ pipeline {
                  hostname
                  ls -la
                  df -h
+                 printenv
                 '''
             }
         }
